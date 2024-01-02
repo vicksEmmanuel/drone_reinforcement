@@ -2,7 +2,7 @@ import math
 import os
 import pygame
 
-from game import BACKGROUND_SCROLL_SPEED, SCREEN_HEIGHT, SCREEN_WIDTH
+from game_objects.constant import BACKGROUND_SCROLL_SPEED, SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 background_image1 = pygame.image.load(os.path.join("assets/background", "background6.jpg"))

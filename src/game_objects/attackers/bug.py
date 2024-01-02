@@ -2,12 +2,10 @@ import os
 import random
 import pygame
 import math
-from game import SCREEN_HEIGHT, SCREEN_WIDTH
-from game_objects.drone import DRONE
+from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH
 
 ENEMY_BUG = pygame.image.load(os.path.join("assets", "Jet.png"))
 ENEMY_BUG = pygame.transform.scale(ENEMY_BUG, (30, 30))
-# ENEMY_BUG = pygame.transform.flip(ENEMY_BUG, False, True)
 
 class Bug:
     def __init__(self, health=1000, ship_position=None, offset=0, level=1):
@@ -63,7 +61,11 @@ class Bug:
         rotated_rect = self.ship_image.get_rect(center=self.pos)
         screen.blit(self.ship_image, rotated_rect.topleft)
 
-def update_bugs(bugs, screen, ship, level, wave_length=5, spacing=50):
+def update_bugs(
+        bugs, screen, ship, 
+        level, reward, score, 
+        wave_length=5, spacing=50,
+    ):
     global spawn_side  # Keep track of the side they should spawn from
     global spawn_angle  # Keep track of the angle they should move towards
 
@@ -77,6 +79,8 @@ def update_bugs(bugs, screen, ship, level, wave_length=5, spacing=50):
         spawn_side = -50 if random.choice([True, False]) else SCREEN_WIDTH + 50
         spawn_angle = 0
         offset = 0
+        new_level  = level + 1
+
         for i in range(wave_length):
             # Increment the offset for each bug to space them out
             offset += spacing
@@ -84,30 +88,26 @@ def update_bugs(bugs, screen, ship, level, wave_length=5, spacing=50):
             new_bug.pos[0] = spawn_side
             new_bug.angle = spawn_angle
             bugs.append(new_bug)
-        new_level  = new_level + 1
-        print("new level --- update", new_level)
 
     for bug in list(bugs):
         # Remove the bug if it has moved past the bottom of the screen
         if bug.pos[1] > SCREEN_HEIGHT:
             bugs.remove(bug)
+            reward = 10
+            score += 10
             continue
         
         if collide(bug, ship):
             ship.health -= 10
             bugs.remove(bug)
+            reward = -10
+            score -= 10
         
         # Update the bug's position and draw it
         bug.move()
         bug.draw(screen)
     
-    print("level === ", new_level)
-    return new_level
-
-    
-
-
-
+    return new_level, reward, score
 
 
 def collide(obj1, obj2):

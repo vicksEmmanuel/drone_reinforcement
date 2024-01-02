@@ -1,7 +1,7 @@
 import os
 import random
 import pygame
-from game import SCREEN_HEIGHT, SCREEN_WIDTH
+from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH
 
 ENEMY_BUG = pygame.image.load(os.path.join("assets", "Bug.png"))
 ENEMY_BUG = pygame.transform.scale(ENEMY_BUG, (50, 50))
