@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 312 312" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-1955,-1380)">
+        <g transform="matrix(0.992314,0,0,0.992314,1498.46,926.539)">
+            <g id="Drone---Motor" serif:id="Drone - Motor">
+                <circle cx="617.464" cy="614.112" r="156.631"/>
+                <g transform="matrix(0.698264,0,0,0.698264,186.311,185.3)">
+                    <circle cx="617.464" cy="614.112" r="156.631" style="fill:rgb(108,106,98);"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 872 113" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-2486,-4004)">
+        <g transform="matrix(1,0,0,1,0,287.93)">
+            <g id="Healthbar---Front" serif:id="Healthbar - Front" transform="matrix(0.513428,0,0,0.752707,1370.59,420.142)">
+                <path d="M3869.2,4416.63C3869.2,4396.19 3844.86,4379.59 3814.89,4379.59L2228.55,4379.59C2198.57,4379.59 2174.24,4396.19 2174.24,4416.63L2174.24,4490.71C2174.24,4511.15 2198.57,4527.75 2228.55,4527.75L3814.89,4527.75C3844.86,4527.75 3869.2,4511.15 3869.2,4490.71L3869.2,4416.63Z" style="fill:rgb(255,11,0);"/>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 995 1484" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-1967,-1339)">
+        <g transform="matrix(0.965926,-0.258819,0.258819,0.965926,-254.78,754.289)">
+            <g id="Bug---Wing-Left" serif:id="Bug - Wing Left" transform="matrix(0.644092,0.644092,-0.908201,0.908201,3900.63,-2117.93)">
+                <path d="M2190.2,2873.94C2164.33,2812.57 2084.72,2770.52 1994.4,2770.52C1904.08,2770.52 1824.47,2812.57 1798.6,2873.94C1710.37,3081.91 1625.63,3319.33 1625.63,3464.17C1625.63,3622.63 1790.87,3751.28 1994.4,3751.28C2197.93,3751.28 2363.17,3622.63 2363.17,3464.17C2363.17,3319.33 2278.43,3081.91 2190.2,2873.94Z" style="fill:rgb(255,218,157);fill-opacity:0.29;"/>
+            </g>
+        </g>
+    </g>
+</svg>
