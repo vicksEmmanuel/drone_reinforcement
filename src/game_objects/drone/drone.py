@@ -6,11 +6,11 @@ import pygame
 import random
 import math
 
-from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH, Direction
+from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH, Direction
 from game_objects.drone.drone_controller import AutoController
 from game_objects.drone.drone_sensors import Sensors
 
-DRONE = pygame.image.load(os.path.join("assets", "Drone.png"))
+DRONE = pygame.image.load(os.path.join(os.path.dirname(__file__), "../assets", "Drone.png"))
 DRONE = pygame.transform.scale(DRONE, (40, 40))
 
 desired_lps = 100.0
@@ -21,11 +21,11 @@ next_think = datetime.datetime.now()
 draw_period = datetime.timedelta(seconds=1.0 / desired_fps)
 next_draw = datetime.datetime.now()
 
-gravity = 19.81
+gravity = 9.81
 
 class Ship(object):
 
-    def __init__(self, pos, world, controller, sensor_interface=Sensors, base_error=0, health = 1000):
+    def __init__(self, pos, world, controller, sensor_interface=Sensors, base_error=0, health = DRONE_HEALTH):
         self.controller = controller
         self.world = world
         self.pos = pos
@@ -49,9 +49,14 @@ class Ship(object):
         return [math.cos(self.rot) * (self.l_thrust + self.r_thrust),
                 math.sin(self.rot) * (self.l_thrust + self.r_thrust)]
 
-    def update(self, action):
+    def update(self, reward, action):
+
+        global new_reward
+        new_reward = reward
+        
         self.accelerate(self.total_thrust())
         nx, ny = self.pos[0] + self.vel[0], self.pos[1] + self.vel[1]
+
         if not self.world.check((nx, ny)):
             self.pos[0] = nx
             self.pos[1] = ny
@@ -61,14 +66,45 @@ class Ship(object):
 
         net_rot_thrust = (self.l_thrust - self.r_thrust) * 0.001
         ground_rot_thrust = 0.01
-        if self.world.check(self.r_thruster()):
-            net_rot_thrust -= ground_rot_thrust
-        if self.world.check(self.l_thruster()):
-            net_rot_thrust += ground_rot_thrust
+
+        # Check thrusters for ground collision
+        if self.world.check(self.r_thruster()) or self.world.check(self.l_thruster()):
+            new_reward -= 50
+        else:
+            new_reward += 50
+
         self.rot += net_rot_thrust
 
+        # Update sensor and controller
         self.sensors.update()
         self.controller.update(self, action)
+
+        # Define safe distance thresholds from each edge
+        safe_distance = SCREEN_HEIGHT * 0.10  # 10% of screen height for top and bottom
+        safe_distance_x = SCREEN_WIDTH * 0.10  # 10% of screen width for left and right
+
+        # Calculate distances from each edge
+        distance_from_top = self.pos[1]
+        distance_from_bottom = SCREEN_HEIGHT - self.pos[1]
+        distance_from_left = self.pos[0]
+        distance_from_right = SCREEN_WIDTH - self.pos[0]
+
+        # Check if the drone is within the safe distance from any edge
+        too_close = any([
+            distance_from_top < safe_distance,
+            distance_from_bottom < safe_distance,
+            distance_from_left < safe_distance_x,
+            distance_from_right < safe_distance_x
+        ])
+
+        # Adjust the reward based on proximity to edges
+        if too_close:
+            new_reward -= 20  # Penalize if too close to any edge
+        else:
+            # Increase reward if within safe bounds
+            new_reward += 20  # Adjust this value as needed
+
+        return new_reward
 
     def r_thruster(self):
         cx, cy = self.pos
@@ -106,16 +142,17 @@ class Ship(object):
         self.mask = pygame.mask.from_surface(rotated_image)
         
     def reset_drone(self):
-        self.pos = [self.world.width/2, self.world.height - 50]
-        self.rot = -math.pi / 2
-        self.l_thrust = 0
-        self.r_thrust = 0
+        self.pos = [self.world.width / 2, self.world.height - 50]
         self.vel = [0, 0]
-        self.max_thrust = 100
-        self.min_thrust = 0
-        self.health = 1000
-        self.mass = 1E3
-        self.arm_length = 15
+        self.rot = -math.pi / 2
+        self.l_thrust = 0  # Reset left thrust
+        self.r_thrust = 0  # Reset right thrust
+        self.health = DRONE_HEALTH
+        self.controller = AutoController()
+        self.direction = Direction.None_  # Reset direction to None
+
+
+       
 
 
 class Ground(object):
@@ -124,15 +161,15 @@ class Ground(object):
         self.height = SCREEN_HEIGHT
 
     def check(self, pos):
-        return (
-            pos[0] < 0 or 
-            pos[1] > self.height or 
-            pos[1] < 0 or 
-            pos[0] > self.height
+        return  (
+            pos[0] < 5 or 
+            pos[1] > (self.height + 5) or 
+            pos[1] < 5 or 
+            pos[0] > (self.width + 5)
         )
 
     def get_height(self, pos):
-        return max(self.width - pos[1], -1)
+        return self.height - pos[1]
 
 
 def create_drone():
@@ -142,17 +179,19 @@ def create_drone():
     return ship, controller, world, [next_draw, next_think, think_period, desired_lps, draw_period]
 
 
-def update_drone(ship, screen, action, next_draw_val, next_think_val, think_period_val, desired_lps_val, draw_period_val):
+def update_drone(ship, screen, reward, action, next_draw_val, next_think_val, think_period_val, desired_lps_val, draw_period_val):
     now = datetime.datetime.now()
 
     if now >= next_think_val:
         next_think_val += think_period_val
 
-        ship.vel[1] += 9.91 / desired_lps_val
-        ship.update(action)
+        ship.vel[1] += gravity / desired_lps_val
+        reward += ship.update(reward,action)
 
     if now >= next_draw_val:
         next_draw_val += draw_period_val
 
         ship.draw(screen)
         # pygame.display.flip()
+    
+    return reward

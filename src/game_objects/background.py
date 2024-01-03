@@ -5,7 +5,9 @@ import pygame
 from game_objects.constant import BACKGROUND_SCROLL_SPEED, SCREEN_HEIGHT, SCREEN_WIDTH
 
 
-background_image1 = pygame.image.load(os.path.join("assets/background", "background6.jpg"))
+# background_image1 = pygame.image.load(os.path.join("assets/background", "background6.jpg"))
+background_image1 = pygame.image.load(os.path.join(os.path.dirname(__file__), "assets/background", "background6.jpg"))
+
 # background_image1 = pygame.transform.scale(background_image1, (SCREEN_WIDTH, SCREEN_HEIGHT/2))
 
 BG_HEIGHT = background_image1.get_height()

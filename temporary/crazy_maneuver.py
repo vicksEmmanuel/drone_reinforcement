@@ -1,13 +1,13 @@
 import os
 import random
 import pygame
-from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH
+from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH
 
 ENEMY_BUG = pygame.image.load(os.path.join("assets", "Bug.png"))
 ENEMY_BUG = pygame.transform.scale(ENEMY_BUG, (50, 50))
 
 class Bug:
-    def __init__(self, health=1000):
+    def __init__(self, health=DRONE_HEALTH):
         self.health = health
         self.original_image = ENEMY_BUG
         self.ship_image = self.original_image

@@ -2,13 +2,13 @@ import os
 import random
 import pygame
 import math
-from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH
+from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH
 
-ENEMY_BUG = pygame.image.load(os.path.join("assets", "Jet.png"))
+ENEMY_BUG = pygame.image.load(os.path.join(os.path.dirname(__file__), "../assets", "Bug.png"))
 ENEMY_BUG = pygame.transform.scale(ENEMY_BUG, (30, 30))
 
 class Bug:
-    def __init__(self, health=1000, ship_position=None, offset=0, level=1):
+    def __init__(self, health=DRONE_HEALTH, ship_position=None, offset=0, level=1):
         self.health = health
         self.original_image = ENEMY_BUG
         self.mask = pygame.mask.from_surface(self.original_image)
@@ -17,6 +17,7 @@ class Bug:
         self.constant_speed = 1.0 + (level/10)  # Constant speed for all bugs
         self.velocity = [self.constant_speed, 0]  # Start moving horizontally
         self.manoeuvre_started = False
+        self.entry_side = self.determine_entry_side(offset)  # Determine the entry side
         self.offset = offset  # Horizontal offset for spacing in formation
         self.curve_factor = random.uniform(0.1, 0.3)  # Factor to determine the curvature of the path
 
@@ -25,6 +26,17 @@ class Bug:
         y_pos = random.randint(0, SCREEN_HEIGHT * 0.3)
         x_pos = (-50 if random.choice([True, False]) else SCREEN_WIDTH + 50) + offset
         return [x_pos, y_pos]
+    
+    def determine_entry_side(self, offset):
+        if offset < 0:
+            return 'left'
+        elif offset > 0:
+            return 'right'
+    
+    def distance_to_ship(self, ship):
+        dx = self.pos[0] - ship.pos[0]
+        dy = self.pos[1] - ship.pos[1]
+        return math.sqrt(dx**2 + dy**2)
 
     def calculate_angle_to_ship(self):
         dx = self.ship_position[0] - self.pos[0]
@@ -68,10 +80,11 @@ def update_bugs(
     ):
     global spawn_side  # Keep track of the side they should spawn from
     global spawn_angle  # Keep track of the angle they should move towards
-
     global new_level
+    global new_reward
 
     new_level = level
+    new_reward = reward
 
     # Check if we need to spawn a new wave
     if len(bugs) == 0:
@@ -81,7 +94,7 @@ def update_bugs(
         offset = 0
         new_level  = level + 1
 
-        for i in range(wave_length):
+        for i in range(max(70, wave_length)):
             # Increment the offset for each bug to space them out
             offset += spacing
             new_bug = Bug(ship_position=ship.pos, offset=offset, level=level)
@@ -91,23 +104,27 @@ def update_bugs(
 
     for bug in list(bugs):
         # Remove the bug if it has moved past the bottom of the screen
-        if bug.pos[1] > SCREEN_HEIGHT:
+        if ((bug.entry_side == 'left' and bug.pos[0] > SCREEN_WIDTH) or
+            (bug.entry_side == 'right' and bug.pos[0] < 0) or
+            (bug.entry_side == 'top' and bug.pos[1] > SCREEN_HEIGHT) or
+            (bug.entry_side == 'bottom' and bug.pos[1] < 0)
+        ):
             bugs.remove(bug)
-            reward = 10
-            score += 10
+            score += 1
+            new_reward += 50
             continue
         
         if collide(bug, ship):
-            ship.health -= 10
+            ship.health -= 0.5
             bugs.remove(bug)
-            reward = -10
-            score -= 10
+            new_reward -= 50
+
         
         # Update the bug's position and draw it
         bug.move()
         bug.draw(screen)
     
-    return new_level, reward, score
+    return new_level, new_reward, score
 
 
 def collide(obj1, obj2):

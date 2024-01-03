@@ -2,7 +2,7 @@ import os
 import random
 import pygame
 import math
-from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH
+from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH
 from game_objects.drone import DRONE
 
 ENEMY_BUG = pygame.image.load(os.path.join("assets", "Jet.png"))

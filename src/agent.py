@@ -2,12 +2,13 @@ import torch
 import random
 import numpy as np
 from collections import deque
-from game_objects.constant import  INPUT_NUMBER, OUTPUT_NUMBER, Direction
+from game_objects.attackers.bug import collide
+from game_objects.constant import  INPUT_NUMBER, LAYERS, OUTPUT_NUMBER, Direction
 from game import Game
 from model import Linear_QNet, QTrainer
 from helper import plot
 
-MAX_MEMORY = 100_000
+MAX_MEMORY = 100_000_000
 BATCH_SIZE = 1000
 LR = 0.001
 
@@ -18,55 +19,91 @@ class Agent:
         self.epsilon = 0 # randomness
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
-        self.model = Linear_QNet(INPUT_NUMBER, 256, OUTPUT_NUMBER)
+        self.model = Linear_QNet(INPUT_NUMBER, LAYERS, OUTPUT_NUMBER)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
 
     def get_state(self, game):
-        # head = game.snake[0]
-        # point_l = Point(head.x - 20, head.y)
-        # point_r = Point(head.x + 20, head.y)
-        # point_u = Point(head.x, head.y - 20)
-        # point_d = Point(head.x, head.y + 20)
-        
-        # dir_l = game.direction == Direction.LEFT
-        # dir_r = game.direction == Direction.RIGHT
-        # dir_u = game.direction == Direction.UP
-        # dir_d = game.direction == Direction.DOWN
+        ship = game.ship
+        bugs = game.bugs
 
-        # state = [
-        #     # Danger straight
-        #     (dir_r and game.is_collision(point_r)) or 
-        #     (dir_l and game.is_collision(point_l)) or 
-        #     (dir_u and game.is_collision(point_u)) or 
-        #     (dir_d and game.is_collision(point_d)),
+        dir_l = ship.direction == Direction.LEFT
+        dir_r = ship.direction == Direction.RIGHT
+        dir_u = ship.direction == Direction.UP
+        dir_d = ship.direction == Direction.DOWN
+        dir_sharp_d = ship.direction == Direction.SHARP_DOWN
+        dir_steady = ship.direction == Direction.STEADY
 
-        #     # Danger right
-        #     (dir_u and game.is_collision(point_r)) or 
-        #     (dir_d and game.is_collision(point_l)) or 
-        #     (dir_l and game.is_collision(point_u)) or 
-        #     (dir_r and game.is_collision(point_d)),
 
-        #     # Danger left
-        #     (dir_d and game.is_collision(point_r)) or 
-        #     (dir_u and game.is_collision(point_l)) or 
-        #     (dir_r and game.is_collision(point_u)) or 
-        #     (dir_l and game.is_collision(point_d)),
+        bug_distances = [bug.distance_to_ship(ship) for bug in bugs]
+
+        # Find the distance to the closest bug
+        # If there are no bugs, you can set a default value (e.g., a large number)
+        closest_bug_distance = min(bug_distances) if bug_distances else 0
+
+
+        # Check if bugs are on the right or left of the ship
+        bugs_on_right = any(bug.pos[0] > ship.pos[0] for bug in bugs)
+        bugs_on_left = any(bug.pos[0] < ship.pos[0] for bug in bugs)
+        bugs_above = any(bug.pos[1] < ship.pos[1] for bug in bugs)
+        bugs_below = any(bug.pos[1] > ship.pos[1] for bug in bugs)
+
+
+        total_x_offset = 0
+        total_y_offset = 0
+        num_bugs = len(bugs)
+
+        for bug in bugs:
+            total_x_offset += (bug.pos[0] - ship.pos[0])
+            total_y_offset += (bug.pos[1] - ship.pos[1])
+
+        # Averaging the offsets
+        avg_x_offset = total_x_offset / num_bugs if num_bugs > 0 else 0
+        avg_y_offset = total_y_offset / num_bugs if num_bugs > 0 else 0
+
+        state = [
+
+            game.level,
+            game.wave_length,
+
+            ship.pos[0], ship.pos[1], 
+            ship.rot, ship.vel[0], 
+            ship.vel[1], 
+            ship.health,
+            ship.r_thruster()[0],
+            ship.r_thruster()[1],
+            ship.l_thruster()[0],
+            ship.l_thruster()[1],
+
+
+
+            # Move direction
+            dir_l,
+            dir_r,
+            dir_u,
+            dir_d,
+            dir_sharp_d,
+            dir_steady,
             
-        #     # Move direction
-        #     dir_l,
-        #     dir_r,
-        #     dir_u,
-        #     dir_d,
-            
-        #     # Food location 
-        #     game.food.x < game.head.x,  # food left
-        #     game.food.x > game.head.x,  # food right
-        #     game.food.y < game.head.y,  # food up
-        #     game.food.y > game.head.y  # food down
-        #     ]
 
-        state = [1,1,1,1,1,1,1,1,1,1,1]
+            # Bugs on the right or left or top or bottom
+            avg_x_offset,
+            avg_y_offset,
+            bugs_on_right,
+            bugs_on_left,
+            bugs_above,
+            bugs_below,
+
+            closest_bug_distance,
+            
+
+
+            any((dir_r and collide(ship, bug)) for bug in bugs) or 
+            any((dir_l and collide(ship, bug)) for bug in bugs) or 
+            any((dir_u and collide(ship, bug)) for bug in bugs) or 
+            any((dir_d and collide(ship, bug)) for bug in bugs)
+        ]
+
 
         return np.array(state, dtype=int)
 
@@ -90,9 +127,9 @@ class Agent:
     def get_action(self, state):
         # random moves: tradeoff exploration / exploitation
         self.epsilon = 80 - self.n_games
-        final_move = [0,0,0,0]
+        final_move = [0] * OUTPUT_NUMBER
         if random.randint(0, 200) < self.epsilon:
-            move = random.randint(0, 2)
+            move = random.randint(0, OUTPUT_NUMBER-1)
             final_move[move] = 1
         else:
             state0 = torch.tensor(state, dtype=torch.float)
@@ -119,6 +156,7 @@ def train():
 
         # perform move and get new state
         reward, done, score = game.play(final_move)
+        print("reward: ", reward, "done: ", done, "score: ", score)
         state_new = agent.get_state(game)
 
         # train short memory
@@ -137,7 +175,6 @@ def train():
                 record = score
                 agent.model.save()
 
-            print('Game', agent.n_games, 'Score', score, 'Record:', record)
 
             plot_scores.append(score)
             total_score += score

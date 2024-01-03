@@ -99,9 +99,6 @@ class AutoController(Controller):
         target_delta = 2
 
         ship.direction  = self.get_direction(action)
-
-        print(ship.direction)
-
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_a] or keys[pygame.K_LEFT] or ship.direction == Direction.LEFT:
@@ -134,10 +131,10 @@ class AutoController(Controller):
             return Direction.LEFT
         elif np.array_equal(action, DirectionValue.UP):
             return Direction.UP
-        # elif np.array_equal(action, DirectionValue.SHARP_DOWN):
-        #     return Direction.SHARP_DOWN
-        # elif np.array_equal(action, DirectionValue.STEADY):
-        #     return Direction.STEADY
+        elif np.array_equal(action, DirectionValue.SHARP_DOWN):
+            return Direction.SHARP_DOWN
+        elif np.array_equal(action, DirectionValue.STEADY):
+            return Direction.STEADY
 
         
 

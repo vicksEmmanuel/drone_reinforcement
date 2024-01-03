@@ -2,7 +2,7 @@ import os
 import random
 import pygame
 import math
-from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH
+from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH
 from game_objects.drone import DRONE
 
 ENEMY_BUG = pygame.image.load(os.path.join("assets", "Jet.png"))
@@ -10,7 +10,7 @@ ENEMY_BUG = pygame.transform.scale(ENEMY_BUG, (30, 30))
 # ENEMY_BUG = pygame.transform.flip(ENEMY_BUG, False, True)
 
 class Bug:
-    def __init__(self, health=1000, ship_position=None, offset=0):
+    def __init__(self, health=DRONE_HEALTH, ship_position=None, offset=0):
         self.health = health
         self.original_image = ENEMY_BUG
         self.ship_image = self.original_image

@@ -32,26 +32,20 @@ class Game:
 
     def play(self, action):
         self.clock.tick(self.FPS)
-
         reward = 0
+
+        drone_reward = 0
+        bug_reward = 0
+
+        self.lost = False
+        self.lost_count = 0
 
         if self.ship.health <= 0:
             self.lost = True
             self.lost_count += 1
-            reward = -10
+            reward = -50
 
             return reward, self.lost, self.score
-
-        if self.lost:
-            if self.lost_count > self.FPS * 3:
-                self.level = 0
-                self.lost_count = 0
-                self.lost = False
-                self.wave_length = 5
-                self.bugs = []
-                self.bug_vel = 1
-                self.ship.reset_drone()
-            
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -60,14 +54,20 @@ class Game:
 
         self.scroll = draw_background(self.screen, self.scroll)
 
-        update_drone(self.ship, self.screen, action, *self.options)
-
-        
-        self.level, reward, self.score  = update_bugs(
+        drone_reward += update_drone(self.ship, self.screen, drone_reward, action, *self.options)
+  
+        self.level, new_bug_reward, self.score  = update_bugs(
             self.bugs, self.screen, 
-            self.ship, self.level, reward, self.score,
+            self.ship, self.level, bug_reward, self.score,
             self.wave_length * self.level, 
         )
+
+        bug_reward += new_bug_reward
+
+        print(drone_reward, bug_reward)
+
+        reward = int(drone_reward + bug_reward)
+
         lives_label = self.main_font.render(f"Lives: {self.ship.health}", 1, (0,0,0))
         level_label = self.main_font.render(f"Level: {self.level}", 1, (0,0,0))
         score_label = self.main_font.render(f"Score: {self.score}", 1, (0,0,0))
@@ -80,6 +80,16 @@ class Game:
 
         return reward, self.lost, self.score
 
+    def reset(self):
+        # if self.lost:
+        #     if self.lost_count > self.FPS * 3:
+        self.level = 0
+        self.score = 0
+
+        self.wave_length = 5
+        self.bugs = []
+        self.bug_vel = 1
+        self.ship.reset_drone()
         
 
 
