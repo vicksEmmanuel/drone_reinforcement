@@ -2,7 +2,7 @@ import os
 import random
 import pygame
 import math
-from game_objects.constant import SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH
+from game_objects.constant import COLLISION_PENALTY, SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH, SURVIVAL_REWARD
 
 ENEMY_BUG = pygame.image.load(os.path.join(os.path.dirname(__file__), "../assets", "Bug.png"))
 ENEMY_BUG = pygame.transform.scale(ENEMY_BUG, (30, 30))
@@ -80,11 +80,7 @@ def update_bugs(
     ):
     global spawn_side  # Keep track of the side they should spawn from
     global spawn_angle  # Keep track of the angle they should move towards
-    global new_level
-    global new_reward
-
-    new_level = level
-    new_reward = reward
+    new_reward = 0 
 
     # Check if we need to spawn a new wave
     if len(bugs) == 0:
@@ -92,7 +88,6 @@ def update_bugs(
         spawn_side = -50 if random.choice([True, False]) else SCREEN_WIDTH + 50
         spawn_angle = 0
         offset = 0
-        new_level  = level + 1
 
         for i in range(max(70, wave_length)):
             # Increment the offset for each bug to space them out
@@ -110,21 +105,21 @@ def update_bugs(
             (bug.entry_side == 'bottom' and bug.pos[1] < 0)
         ):
             bugs.remove(bug)
-            score += 1
-            new_reward += 50
+            score += 0.1
+            new_reward += SURVIVAL_REWARD
             continue
         
         if collide(bug, ship):
             ship.health -= 0.5
+            new_reward  += COLLISION_PENALTY
             bugs.remove(bug)
-            new_reward -= 50
 
         
         # Update the bug's position and draw it
         bug.move()
         bug.draw(screen)
     
-    return new_level, new_reward, score
+    return  new_reward + reward, score
 
 
 def collide(obj1, obj2):
