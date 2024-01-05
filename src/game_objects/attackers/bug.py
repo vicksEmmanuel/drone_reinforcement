@@ -5,7 +5,7 @@ import math
 from game_objects.constant import COLLISION_PENALTY, FILE_PATH, SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH, SURVIVAL_REWARD
 
 
-file_path = os.path.join(FILE_PATH, "Bug.png")
+file_path = os.path.join(FILE_PATH, "bug.png")
 print("Loading image from:", file_path)
 
 ENEMY_BUG = pygame.image.load(file_path)
