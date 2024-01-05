@@ -8,7 +8,7 @@ from conv_model import Conv_QNet, Conv_QTrainer
 from game_objects.attackers.bug import collide
 from game_objects.constant import  COLLISION_PENALTY, CONV_INPUT_NUMBER, LAYERS, OUTPUT_NUMBER, SCREEN_HEIGHT, SCREEN_WIDTH, Direction
 from game import Game
-from helper import plot
+from helper import load_values, plot, save_values
 
 MAX_MEMORY = 100_000_000_000
 BATCH_SIZE = 1000
@@ -20,12 +20,13 @@ class Agent:
     def __init__(self):
         self.n_games = 0
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.epsilon = 0.9 # randomness
+        self.epsilon = 0 # randomness
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
         self.frame_stack = deque(maxlen=FRAME_STACK_SIZE) 
 
         self.model = Conv_QNet(CONV_INPUT_NUMBER, OUTPUT_NUMBER)
+        self.model.load()
         self.trainer = Conv_QTrainer(self.model, lr=LR, gamma=self.gamma)
 
 
@@ -42,7 +43,6 @@ class Agent:
         # Combine the frames into a single 3D array (shape: [4, 84, 84])
         stacked_frames = np.stack(list(self.frame_stack), axis=0)
         return stacked_frames
-
 
     def capture_screen(self, screen):
         # Convert the screen to a 3D array (width x height x 3)
@@ -78,19 +78,17 @@ class Agent:
 
        # Unzip experiences and convert to tensors
         states, actions, rewards, next_states, dones = zip(*mini_sample)
-        states_tensor = torch.stack(states).to(self.device)  # More efficient stacking
-        next_states_tensor = torch.stack(next_states).to(self.device)
+
+        states_tensor = torch.stack([torch.Tensor(s) for s in states]).to(self.device)
+        next_states_tensor = torch.stack([torch.Tensor(s) for s in next_states]).to(self.device)
         actions_tensor = torch.tensor(actions, dtype=torch.long).to(self.device)
         rewards_tensor = torch.tensor(rewards, dtype=torch.float).to(self.device)
-        dones_tensor = torch.tensor(dones, dtype=torch.bool).to(self.device)  # Use bool for dones
+        dones_tensor = torch.tensor(dones, dtype=torch.bool).to(self.device)
 
         # Call the trainer's train_step method
         self.trainer.train_step(states_tensor, actions_tensor, rewards_tensor, next_states_tensor, dones_tensor)
 
-
-
     def train_short_memory(self, state, action, reward, next_state, done):
-
         # Convert single experience to tensors with batch size of 1
         state_tensor = torch.tensor(state, dtype=torch.float).unsqueeze(0).to(self.device)
         next_state_tensor = torch.tensor(next_state, dtype=torch.float).unsqueeze(0).to(self.device)
@@ -100,11 +98,11 @@ class Agent:
 
         self.trainer.train_step(state_tensor, action_tensor, reward_tensor, next_state_tensor, done_tensor)
 
-
     def get_action(self, state):
         self.epsilon = 80 - self.n_games
         final_move = [0] * OUTPUT_NUMBER
-        if random.randint(0, 200) < self.epsilon:
+
+        if random.randint(0, 500) < self.epsilon:
             move = random.randint(0, OUTPUT_NUMBER-1)
             final_move[move] = 1
         else:
@@ -124,13 +122,17 @@ class Agent:
 
 
 def agent_train():
-    plot_scores = []
-    plot_mean_scores = []
-    total_score = 0
-    record = 0
+    plot_scores, plot_mean_scores, plot_reward, plot_mean_reward, n_games, record = load_values()
+
+    total_score = sum(plot_scores)
+    total_reward = sum(plot_reward)
     agent = Agent()
     game = Game()
+    agent.n_games = n_games
     is_new_episode = True
+
+    reward_per_episode = []
+
     while True:
 
         screen_data = agent.capture_screen(game.screen)
@@ -144,15 +146,14 @@ def agent_train():
         # get move
         final_move = agent.get_action(state_old)
 
-        print("final_move: ", final_move)
-
-
         # Perform the action and get the new state
         reward, done, score = game.play(final_move)
         _, __, is_collision = game.update_closest_bug_data(game.bugs, game.ship)
 
         if is_collision:
             reward -= COLLISION_PENALTY
+
+        reward_per_episode.append(reward)
 
         new_screen_data = agent.capture_screen(game.screen)
         processed_new_frame = agent.preprocess_frame(new_screen_data)
@@ -172,9 +173,9 @@ def agent_train():
 
         if done:
             # train long memory, plot result
-            game.reset()
-            agent.n_games += 1
             agent.train_long_memory()
+            agent.n_games += 1
+            game.reset()
 
             if score > record:
                 record = score
@@ -185,5 +186,24 @@ def agent_train():
             total_score += score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores)
+
+
+            plot_reward.append(sum(reward_per_episode))
+            total_reward += sum(reward_per_episode)
+            mean_reward = total_reward / agent.n_games
+            plot_mean_reward.append(mean_reward)
+
+
+
+            save_values(
+                plot_scores, 
+                plot_mean_scores, 
+                plot_reward, 
+                plot_mean_reward, 
+                agent.n_games, 
+                record
+            )
+
+            reward_per_episode = []
+
 

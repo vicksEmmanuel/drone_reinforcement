@@ -73,7 +73,7 @@ class Game:
 
         bug_reward += new_bug_reward
         reward += int(drone_reward + bug_reward)
-        self.score += reward
+        self.score = score
 
         lives_label = self.main_font.render(f"Lives: {self.ship.health}", 1, (0,0,0))
         level_label = self.main_font.render(f"Level: {self.level}", 1, (0,0,0))
