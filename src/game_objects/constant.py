@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 
@@ -39,3 +40,6 @@ SAFE_ALTITUDE_REWARD = 10
 GROUND_PROXIMITY_PENALTY = -50  # This can be scaled based on proximity
 EDGE_PROXIMITY_PENALTY = -10    # This can be scaled based on proximity
 OPTIMAL_ALTITUDE = 100 
+
+
+FILE_PATH = os.path.join(os.path.dirname(__file__), "assets")

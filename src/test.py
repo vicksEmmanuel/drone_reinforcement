@@ -1,7 +1,9 @@
 import os
 
-file_path = os.path.join(os.path.dirname(__file__), "../assets", "Drone.png")
+from game_objects.constant import FILE_PATH
+
+file_path = os.path.join(FILE_PATH, "Drone.png")
 print("Loading image from:", file_path)
 
-file_path = os.path.join("src", "assets", "Bug.png")
+file_path = os.path.join(FILE_PATH, "Bug.png")
 print("Loading image from:", file_path)
