@@ -10,7 +10,8 @@ from game_objects.constant import EDGE_PROXIMITY_PENALTY, SAFE_ALTITUDE_REWARD, 
 from game_objects.drone.drone_controller import AutoController
 from game_objects.drone.drone_sensors import Sensors
 
-DRONE = pygame.image.load(os.path.join(os.path.dirname(__file__), "../assets", "Drone.png"))
+# DRONE = pygame.image.load(os.path.join(os.path.dirname(__file__), "../assets", "Drone.png"))
+DRONE = pygame.image.load("Drone.png")
 DRONE = pygame.transform.scale(DRONE, (40, 40))
 
 desired_lps = 100.0
