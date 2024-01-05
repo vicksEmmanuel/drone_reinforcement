@@ -4,8 +4,11 @@ import pygame
 import math
 from game_objects.constant import COLLISION_PENALTY, SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH, SURVIVAL_REWARD
 
-# ENEMY_BUG = pygame.image.load(os.path.join(os.path.dirname(__file__), "../assets", "Bug.png"))
-ENEMY_BUG = pygame.image.load("Bug.png")
+
+file_path = os.path.join(os.path.dirname(__file__), "../assets", "Bug.png")
+print("Loading image from:", file_path)
+
+ENEMY_BUG = pygame.image.load(file_path)
 ENEMY_BUG = pygame.transform.scale(ENEMY_BUG, (30, 30))
 
 class Bug:
