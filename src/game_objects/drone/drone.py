@@ -6,12 +6,13 @@ import pygame
 import random
 import math
 
-from game_objects.constant import EDGE_PROXIMITY_PENALTY, SAFE_ALTITUDE_REWARD, SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH, Direction
+from game_objects.constant import EDGE_PROXIMITY_PENALTY, FILE_PATH, SAFE_ALTITUDE_REWARD, SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH, Direction
 from game_objects.drone.drone_controller import AutoController
 from game_objects.drone.drone_sensors import Sensors
 
-file_path = os.path.join(os.path.dirname(__file__), "../assets", "Drone.png")
+file_path = os.path.join(FILE_PATH, "Drone.png")
 print("Loading image from:", file_path)
+
 DRONE = pygame.image.load(file_path)
 DRONE = pygame.transform.scale(DRONE, (40, 40))
 
