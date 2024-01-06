@@ -21,6 +21,12 @@ class Agent:
         self.n_games = 0
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.epsilon = 0 # randomness
+
+        self.explore_start = 1.0            # exploration probability at start
+        self.explore_stop = 0.01            # minimum exploration probability 
+        self.decay_rate = 0.00001 
+
+        
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
         self.frame_stack = deque(maxlen=FRAME_STACK_SIZE) 
@@ -102,7 +108,7 @@ class Agent:
         self.epsilon = 80 - self.n_games
         final_move = [0] * OUTPUT_NUMBER
 
-        if random.randint(0, 500) < self.epsilon:
+        if random.randint(0, 80) < self.epsilon:
             move = random.randint(0, OUTPUT_NUMBER-1)
             final_move[move] = 1
         else:
@@ -179,6 +185,8 @@ def agent_train():
 
             if score > record:
                 record = score
+                agent.model.save()
+            else:
                 agent.model.save()
 
 

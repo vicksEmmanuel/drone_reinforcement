@@ -89,19 +89,26 @@ def update_bugs(
     # Check if we need to spawn a new wave
     if len(bugs) == 0:
         # Determine the side for the new wave to spawn
-        spawn_side = -50 if random.choice([True, False]) else SCREEN_WIDTH + 50
+        random_entry = random.choices(
+            [True, False],
+            weights=[0.5, 0.5],
+            k=4
+        )[0]
+
+        spawn_side = -50  if random_entry else SCREEN_WIDTH + 50
         spawn_angle = 0
         offset = 0
 
         for i in range(max(70, wave_length)):
             # Increment the offset for each bug to space them out
-            offset += spacing
+            offset += spawn_side * spacing
             new_bug = Bug(ship_position=ship.pos, offset=offset, level=level)
             new_bug.pos[0] = spawn_side
             new_bug.angle = spawn_angle
             bugs.append(new_bug)
 
     for bug in list(bugs):
+
         # Remove the bug if it has moved past the bottom of the screen
         if ((bug.entry_side == 'left' and bug.pos[0] > SCREEN_WIDTH) or
             (bug.entry_side == 'right' and bug.pos[0] < 0) or

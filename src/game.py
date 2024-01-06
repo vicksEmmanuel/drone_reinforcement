@@ -72,16 +72,24 @@ class Game:
         )
 
         bug_reward += new_bug_reward
-        reward += int(drone_reward + bug_reward)
+
+        if (bug_reward < 0):
+            reward = bug_reward
+        else:
+            reward += int(drone_reward + bug_reward)
+        
         self.score = score
 
         lives_label = self.main_font.render(f"Lives: {self.ship.health}", 1, (0,0,0))
         level_label = self.main_font.render(f"Level: {self.level}", 1, (0,0,0))
+        reward_label = self.main_font.render(f"Reward: {reward}", 1, (0,0,0))
         score_label = self.main_font.render(f"Score: {int(self.score)}", 1, (0,0,0))
 
         self.screen.blit(lives_label, (10, 35))
         self.screen.blit(score_label, (10, 10))
         self.screen.blit(level_label, (SCREEN_WIDTH - level_label.get_width() - 10, 10))
+        self.screen.blit(reward_label, (SCREEN_WIDTH - reward_label.get_width() - 10, 35))
+
 
         pygame.display.update()
 
