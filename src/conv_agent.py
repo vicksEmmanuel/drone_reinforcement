@@ -105,10 +105,10 @@ class Agent:
         self.trainer.train_step(state_tensor, action_tensor, reward_tensor, next_state_tensor, done_tensor)
 
     def get_action(self, state):
-        self.epsilon = 1000 - self.n_games
+        self.epsilon = 1433 - self.n_games
         final_move = [0] * OUTPUT_NUMBER
 
-        if random.randint(0, 1000) < self.epsilon:
+        if random.randint(0, 1433) < self.epsilon:
             move = random.randint(0, OUTPUT_NUMBER-1)
             final_move[move] = 1
             print("Action: Random")
