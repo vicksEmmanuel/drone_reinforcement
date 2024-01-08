@@ -2,7 +2,7 @@ import os
 from enum import Enum
 
 
-SCREEN_WIDTH = 400
+SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 750
 BACKGROUND_SCROLL_SPEED = 0.6
 

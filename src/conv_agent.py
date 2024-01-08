@@ -6,7 +6,7 @@ import numpy as np
 from collections import deque
 from conv_model import Conv_QNet, Conv_QTrainer
 from game_objects.attackers.bug import collide
-from game_objects.constant import  COLLISION_PENALTY, CONV_INPUT_NUMBER, LAYERS, OUTPUT_NUMBER, SCREEN_HEIGHT, SCREEN_WIDTH, Direction
+from game_objects.constant import  COLLISION_PENALTY, CONV_INPUT_NUMBER, LAYERS, OUTPUT_NUMBER, SCREEN_HEIGHT, SCREEN_WIDTH, Direction, DirectionValue
 from game import Game
 from helper import load_values, plot, save_values
 
@@ -24,7 +24,7 @@ class Agent:
 
         self.explore_start = 1.0            # exploration probability at start
         self.explore_stop = 0.01            # minimum exploration probability 
-        self.decay_rate = 0.00001 
+        self.decay_rate = 0.00001
 
         
         self.gamma = 0.9 # discount rate
@@ -34,6 +34,19 @@ class Agent:
         self.model = Conv_QNet(CONV_INPUT_NUMBER, OUTPUT_NUMBER)
         self.model.load()
         self.trainer = Conv_QTrainer(self.model, lr=LR, gamma=self.gamma)
+
+        self.direction_sequences = [
+            [DirectionValue.RIGHT, DirectionValue.UP, DirectionValue.LEFT, DirectionValue.DOWN],
+            [DirectionValue.DOWN, DirectionValue.UP, DirectionValue.RIGHT, DirectionValue.LEFT],
+            [DirectionValue.LEFT, DirectionValue.UP, DirectionValue.DOWN, DirectionValue.RIGHT],
+            [DirectionValue.RIGHT, DirectionValue.DOWN, DirectionValue.LEFT, DirectionValue.UP],
+            [DirectionValue.LEFT, DirectionValue.DOWN, DirectionValue.RIGHT, DirectionValue.UP],
+            [DirectionValue.UP, DirectionValue.RIGHT, DirectionValue.DOWN, DirectionValue.LEFT]
+        ]
+        self.current_sequence = random.choice(self.direction_sequences)
+        self.current_direction_index = 0
+        self.steps_in_current_direction = 0
+        self.max_steps_in_current_direction = random.randint(1, 100)
 
 
     def stack_frames(self, new_frame, is_new_episode):
@@ -105,13 +118,13 @@ class Agent:
         self.trainer.train_step(state_tensor, action_tensor, reward_tensor, next_state_tensor, done_tensor)
 
     def get_action(self, state):
-        self.epsilon = 1433 - self.n_games
+        self.epsilon = 1000 - self.n_games
         final_move = [0] * OUTPUT_NUMBER
 
-        if random.randint(0, 1433) < self.epsilon:
-            move = random.randint(0, OUTPUT_NUMBER-1)
-            final_move[move] = 1
-            print("Action: Random")
+        if random.randint(0, 800) < self.epsilon:
+            self.update_movement_sequence()
+            current_direction = self.current_sequence[self.current_direction_index]
+            return current_direction.value
         else:
             state_tensor = torch.tensor(state, dtype=torch.float).unsqueeze(0)  # Add batch dimension
 
@@ -122,11 +135,34 @@ class Agent:
             self.model.eval()  # Set the model to evaluation mode
             with torch.no_grad():  # Turn off gradients for prediction
                 prediction = self.model(state_tensor)
-            move = torch.argmax(prediction).item()
-            final_move[move] = 1
-            print("Action: Predicted")
 
-        return final_move
+            move = torch.argmax(prediction).item()
+            action_map = {
+                0: DirectionValue.None_.value,  # NONE
+                1: DirectionValue.LEFT.value,  # LEFT
+                2: DirectionValue.RIGHT.value,  # RIGHT
+                3: DirectionValue.UP.value,    # UP
+                4: DirectionValue.DOWN.value   # DOWN
+            }
+
+            final_move = action_map.get(move, DirectionValue.None_.value)
+            # print("Action: Predicted")
+
+            return final_move
+            # move = torch.argmax(prediction).item()
+            # final_move[move] = 1
+
+    def update_movement_sequence(self):
+        # Update steps and direction
+        self.steps_in_current_direction += 1
+        if self.steps_in_current_direction >= self.max_steps_in_current_direction:
+            self.steps_in_current_direction = 0
+            self.max_steps_in_current_direction = random.randint(1, 50)
+            self.current_direction_index = (self.current_direction_index + 1) % len(self.current_sequence)
+
+            # If the sequence is complete, pick a new sequence
+            if self.current_direction_index == 0:
+                self.current_sequence = random.choice(self.direction_sequences)
 
 
 def agent_train():

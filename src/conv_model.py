@@ -61,7 +61,6 @@ class Conv_QTrainer:
 
     def train_step(self, states, actions, rewards, next_states, dones):
 
-
         states = torch.tensor(states, dtype=torch.float).to(self.device)
         next_states = torch.tensor(next_states, dtype=torch.float).to(self.device)
         actions = torch.tensor(actions, dtype=torch.long).to(self.device)

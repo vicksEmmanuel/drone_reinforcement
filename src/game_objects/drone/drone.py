@@ -7,7 +7,7 @@ import random
 import math
 
 from game_objects.constant import EDGE_PROXIMITY_PENALTY, FILE_PATH, SAFE_ALTITUDE_REWARD, SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH, Direction
-from game_objects.drone.drone_controller import AutoController
+from game_objects.drone.drone_controller import AutoController, ManualController
 from game_objects.drone.drone_sensors import Sensors
 
 file_path = os.path.join(FILE_PATH, "Drone.png")
@@ -25,7 +25,7 @@ next_think = datetime.datetime.now()
 draw_period = datetime.timedelta(seconds=1.0 / desired_fps)
 next_draw = datetime.datetime.now()
 
-gravity = 9.81
+gravity = 9.91
 
 class Ship(object):
 
@@ -186,13 +186,13 @@ class Ship(object):
         
         # Check distances from all edges and penalize for being too close
         if distance_from_left < safe_distance_x:
-            penalty_reward -= EDGE_PROXIMITY_PENALTY * (1 - (distance_from_left / safe_distance_x))
+            penalty_reward = (EDGE_PROXIMITY_PENALTY * (1 - (distance_from_left / safe_distance_x)))
         if distance_from_right < safe_distance_x:
-            penalty_reward -= EDGE_PROXIMITY_PENALTY * (1 - (distance_from_right / safe_distance_x))
+            penalty_reward = (EDGE_PROXIMITY_PENALTY * (1 - (distance_from_right / safe_distance_x)))
         if distance_from_top < safe_distance_y:
-            penalty_reward -= EDGE_PROXIMITY_PENALTY * (1 - (distance_from_top / safe_distance_y))
+            penalty_reward = (EDGE_PROXIMITY_PENALTY * (1 - (distance_from_top / safe_distance_y)))
         if distance_from_bottom < safe_distance_y:
-            penalty_reward -= EDGE_PROXIMITY_PENALTY * (1 - (distance_from_bottom / safe_distance_y))
+            penalty_reward = (EDGE_PROXIMITY_PENALTY * (1 - (distance_from_bottom / safe_distance_y)))
 
         # Check if the drone is in the central safe zone
         central_zone_x = SCREEN_WIDTH * 0.2  # 20% of the screen width from each side

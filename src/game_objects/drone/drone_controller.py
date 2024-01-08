@@ -88,6 +88,17 @@ class AutoController(Controller):
         target_delta = 2
         ship.direction  = self.get_direction(ship, action)
 
+        # keys = pygame.key.get_pressed()
+        # if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+        #     self.desired_x -= target_delta
+        # if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+        #     self.desired_x += target_delta
+        # if keys[pygame.K_w] or keys[pygame.K_UP]:
+        #     self.desired_height += target_delta
+        # if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+        #     self.desired_height -= target_delta
+
+
         if ship.direction == Direction.LEFT:
             self.desired_x -= target_delta
         if ship.direction == Direction.RIGHT:
@@ -155,6 +166,106 @@ class AutoController(Controller):
         self.rot_pid = PID(50, 0, 0)
 
         
+
+    def draw(self, dest):
+        x, y = int(self.ship.pos[0]), int(self.ship.pos[1])
+        tx = int(dest.get_size()[0] / 2 + self.desired_x)
+        ty = int(self.ship.world.width - self.desired_height)
+        r = 20
+        colour = (200, 255, 200)
+
+        pygame.draw.line(dest, colour, (tx-r, ty), (tx+r, ty))
+        pygame.draw.line(dest, colour, (tx, ty-r), (tx, ty+r))
+
+
+class ManualController(Controller):
+
+    def __init__(self):
+        Controller.__init__(self)
+
+    def update(self, ship, action):
+        self.ship = ship
+
+        # Put move here
+        l = 0
+        r = 0
+        delta = 100
+
+
+        ship.direction  = self.get_direction(ship, action)
+
+
+        l = 0
+        r = 0
+        delta = 100
+
+        if ship.direction == Direction.UP:
+            l = delta
+            r = delta
+        if ship.direction == Direction.LEFT:
+            r = delta
+        if ship.direction == Direction.RIGHT:
+            l = delta
+
+
+        ship.set_thrust(l, r)
+
+
+    def get_direction(self, ship, action):
+        # Define safe distance thresholds from each edge
+        safe_distance = ship.world.height * 0.2  # 10% of screen height for top and bottom
+        safe_distance_x = ship.world.width * 0.2  # 10% of screen width for left and right
+
+        # Calculate distances from each edge
+        distance_from_top = ship.pos[1]
+        distance_from_bottom = ship.world.height - ship.pos[1]
+        distance_from_left = ship.pos[0]
+        distance_from_right = ship.world.width - ship.pos[0]
+
+        # Check if the ship is too close to any edge
+        too_close_top = distance_from_top < safe_distance
+        too_close_bottom = distance_from_bottom < safe_distance
+        too_close_left = distance_from_left < safe_distance_x
+        too_close_right = distance_from_right < safe_distance_x
+
+        # Adjust direction based on proximity to edges
+        if too_close_bottom and np.array_equal(action, DirectionValue.DOWN.value):
+            return Direction.UP
+        if too_close_top and np.array_equal(action, DirectionValue.UP.value):
+            return Direction.DOWN
+        if too_close_left and np.array_equal(action, DirectionValue.LEFT.value):
+            return Direction.RIGHT
+        if too_close_right and np.array_equal(action, DirectionValue.RIGHT.value):
+            return Direction.LEFT
+
+        # If not too close to any edge, proceed with the chosen action
+        if np.array_equal(action, DirectionValue.RIGHT.value):
+            return Direction.RIGHT
+        elif np.array_equal(action, DirectionValue.DOWN.value):
+            return Direction.DOWN
+        elif np.array_equal(action, DirectionValue.LEFT.value):
+            return Direction.LEFT
+        elif np.array_equal(action, DirectionValue.UP.value):
+            return Direction.UP
+        else:
+            return Direction.None_
+
+    def reset(self):
+        self.desired_height = 100
+        self.desired_x = -100
+
+        self.estimated_x = 0
+        self.height_estimate = 0
+        self.rotation_estimate = -math.pi / 2
+
+        self.ship = None
+
+        self.height_pid = PID(0.05, 0, 3.5)
+        self.x_pid = PID(0.05, 0, 2)
+
+        self.yvel_pid = PID(10000, 0, 0)
+        self.xvel_pid = PID(0.2, 0, 0)
+        self.rot_pid = PID(50, 0, 0)  
 
     def draw(self, dest):
         x, y = int(self.ship.pos[0]), int(self.ship.pos[1])
