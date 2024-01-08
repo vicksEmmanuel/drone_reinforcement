@@ -95,7 +95,7 @@ class Agent:
         # Unzip the mini-batch of experiences
         states, actions, rewards, next_states, dones = zip(*mini_sample)
 
-       # Unzip experiences and convert to tensors
+        # Unzip experiences and convert to tensors
         states, actions, rewards, next_states, dones = zip(*mini_sample)
 
         states_tensor = torch.stack([torch.Tensor(s) for s in states]).to(self.device)
@@ -124,6 +124,7 @@ class Agent:
         if random.randint(0, 800) < self.epsilon:
             self.update_movement_sequence()
             current_direction = self.current_sequence[self.current_direction_index]
+            print("Action: Random")
             return current_direction.value
         else:
             state_tensor = torch.tensor(state, dtype=torch.float).unsqueeze(0)  # Add batch dimension
@@ -146,7 +147,7 @@ class Agent:
             }
 
             final_move = action_map.get(move, DirectionValue.None_.value)
-            # print("Action: Predicted")
+            print("Action: Predicted")
 
             return final_move
             # move = torch.argmax(prediction).item()
@@ -218,7 +219,7 @@ def agent_train():
         if done:
             # train long memory, plot result
 
-            if (agent.n_games % 100 == 0):
+            if (agent.n_games % 10 == 0):
                 print(f"Game: {agent.n_games}, Score: {score}, Record: {record}")
                 agent.train_long_memory()
 
