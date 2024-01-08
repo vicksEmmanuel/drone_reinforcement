@@ -11,7 +11,7 @@ from game import Game
 from helper import load_values, plot, save_values
 
 MAX_MEMORY = 100_000_000_000
-BATCH_SIZE = 1000000
+BATCH_SIZE = 500
 LR = 0.001
 FRAME_STACK_SIZE = CONV_INPUT_NUMBER
 
@@ -217,9 +217,9 @@ def agent_train():
         if done:
             # train long memory, plot result
 
-            if (agent.n_games % 5 == 0):
-                print(f"Game: {agent.n_games}, Score: {score}, Record: {record}")
-                agent.train_long_memory()
+            # if (agent.n_games % 5 == 0):
+            #     print(f"Game: {agent.n_games}, Score: {score}, Record: {record}")
+            agent.train_long_memory()
 
             agent.n_games += 1
             game.reset()
