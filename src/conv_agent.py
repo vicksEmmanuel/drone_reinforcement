@@ -88,18 +88,16 @@ class Agent:
 
     def train_long_memory(self):
         if len(self.memory) > BATCH_SIZE:
-            mini_sample = random.sample(self.memory, BATCH_SIZE) # list of tuples
+            mini_sample = random.sample(self.memory, BATCH_SIZE)  # list of tuples
         else:
             mini_sample = self.memory
 
         # Unzip the mini-batch of experiences
         states, actions, rewards, next_states, dones = zip(*mini_sample)
 
-        # Unzip experiences and convert to tensors
-        states, actions, rewards, next_states, dones = zip(*mini_sample)
-
-        states_tensor = torch.stack([torch.Tensor(s) for s in states]).to(self.device)
-        next_states_tensor = torch.stack([torch.Tensor(s) for s in next_states]).to(self.device)
+        # Convert to tensors and use clone().detach() for tensors
+        states_tensor = torch.stack([s.clone().detach() for s in states]).to(self.device)
+        next_states_tensor = torch.stack([s.clone().detach() for s in next_states]).to(self.device)
         actions_tensor = torch.tensor(actions, dtype=torch.long).to(self.device)
         rewards_tensor = torch.tensor(rewards, dtype=torch.float).to(self.device)
         dones_tensor = torch.tensor(dones, dtype=torch.bool).to(self.device)
@@ -219,7 +217,7 @@ def agent_train():
         if done:
             # train long memory, plot result
 
-            if (agent.n_games % 10 == 0):
+            if (agent.n_games % 5 == 0):
                 print(f"Game: {agent.n_games}, Score: {score}, Record: {record}")
                 agent.train_long_memory()
 
