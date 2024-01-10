@@ -124,7 +124,6 @@ class Agent:
         if use_random:
             self.update_movement_sequence()
             current_direction = self.current_sequence[self.current_direction_index]
-            print("Action: Random")
             return current_direction.value
         else:
             state_tensor = torch.tensor(state, dtype=torch.float).unsqueeze(0)  # Add batch dimension
@@ -147,7 +146,6 @@ class Agent:
             }
 
             final_move = action_map.get(move, DirectionValue.None_.value)
-            print("Action: Predicted")
 
             return final_move
             # move = torch.argmax(prediction).item()

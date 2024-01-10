@@ -58,7 +58,11 @@ class Conv_QNet(nn.Module):
         torch.save(self.state_dict(), file_name)
     
     def load(self, file_name='model.pth'):
-        self.download_model_from_github(MODEL_URL)
+        try:
+            self.download_model_from_github(MODEL_URL)
+        except:
+            print("Unable to download model from github. Check your internet connection")
+
 
         model_folder_path = './model'
         file_path = os.path.join(model_folder_path, file_name)
