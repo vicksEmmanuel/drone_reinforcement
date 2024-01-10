@@ -24,3 +24,8 @@ Install all the necessary dependencies from the `requirements.txt` file using th
 ```bash
 pip install -r requirements.txt
 ```
+
+## Run
+```bash
+python3 src/start.py
+```
