@@ -3,6 +3,10 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import os
+import requests
+from torch import load
+
+from game_objects.constant import MODEL_URL
 
 class Conv_QNet(nn.Module):
     def __init__(self, input_channels, num_actions):
@@ -31,6 +35,19 @@ class Conv_QNet(nn.Module):
         x = x.view(-1, self.conv_output_size)
         x = F.relu(self.fc(x))
         return self.out(x)
+    
+    def download_model_from_github(url, local_dir='./model', file_name='model.pth'):
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
+
+        local_file_path = os.path.join(local_dir, file_name)
+        response = requests.get(url)
+
+        with open(local_file_path, 'wb') as file:
+            file.write(response.content)
+            
+        print(f"Model downloaded and saved to {local_file_path}")
+
 
     def save(self, file_name='model.pth'):
         model_folder_path = './model'
@@ -41,6 +58,8 @@ class Conv_QNet(nn.Module):
         torch.save(self.state_dict(), file_name)
     
     def load(self, file_name='model.pth'):
+        self.download_model_from_github(MODEL_URL)
+
         model_folder_path = './model'
         file_path = os.path.join(model_folder_path, file_name)
         if os.path.exists(file_path):
