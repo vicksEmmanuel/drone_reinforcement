@@ -78,6 +78,8 @@ class Game:
             reward += int(drone_reward + bug_reward)
         
         self.score = score
+
+        self.reward = reward
         
         return reward, self.lost, self.score
 
@@ -97,9 +99,9 @@ class Game:
             bug.draw(self.screen)
 
 
-        lives_label = self.main_font.render(f"Lives: {self.ship.health}", 1, (0,0,0))
-        level_label = self.main_font.render(f"Level: {self.level}", 1, (0,0,0))
-        reward_label = self.main_font.render(f"Reward: {self.reward}", 1, (0,0,0))
+        lives_label = self.main_font.render(f"Lives: {self.format_number(self.ship.health)}", 1, (0,0,0))
+        level_label = self.main_font.render(f"Level: {self.format_number(self.level)}", 1, (0,0,0))
+        reward_label = self.main_font.render(f"Reward: {self.format_number(self.reward)}", 1, (0,0,0))
         score_label = self.main_font.render(f"Score: {int(self.score)}", 1, (0,0,0))
 
         self.screen.blit(lives_label, (10, 35))
@@ -111,7 +113,15 @@ class Game:
 
         pygame.display.update()
 
-
+    def format_number(self, number):
+        if number >= 1e9:
+            return f"{number/1e9:.3f}B"
+        elif number >= 1e6:
+            return f"{number/1e6:.3f}M"
+        elif number >= 1e3:
+            return f"{number/1e3:.3f}K"
+        else:
+            return f"{number:.3f}"
 
     def update_closest_bug_data(self, bugs, ship):
         if not bugs:
