@@ -26,6 +26,11 @@ pip install -r requirements.txt
 ```
 
 ## Run
+
 ```bash
 python3 src/start.py
 ```
+
+Or see this short tutorial
+
+![Simulation Screenshot](https://github.com/vicksEmmanuel/drone_reinforcement/blob/main/tutorial.gif)
