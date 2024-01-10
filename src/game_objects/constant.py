@@ -1,4 +1,5 @@
 import os
+import datetime
 from enum import Enum
 
 
@@ -29,9 +30,21 @@ class DirectionValue(Enum):
 OUTPUT_NUMBER = 4
 INPUT_NUMBER = 29
 CONV_INPUT_NUMBER = 4
+FRAME_STACK_SIZE=4
+CONV_OUTPUT_NUMBER = 4
 LAYERS = 400
 
 DRONE_HEALTH = 100
+
+
+# DRONE CONFIG
+DESIRED_LPS=100.0
+DESIRED_FPS = 60.0
+
+THINK_PERIOD = datetime.timedelta(seconds=1.0 / DESIRED_LPS)
+NEXT_THINK = datetime.datetime.now()
+DRAW_PERIOD = datetime.timedelta(seconds=1.0 / DESIRED_FPS)
+NEXT_DRAW = datetime.datetime.now()
 
 
 SURVIVAL_REWARD = 200

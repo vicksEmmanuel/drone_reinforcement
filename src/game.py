@@ -1,13 +1,13 @@
+import datetime
 import math
 import pygame
 
-from game_objects.constant import COLLISION_PENALTY, SCREEN_HEIGHT, SCREEN_WIDTH
+from game_objects.constant import NEXT_DRAW,COLLISION_PENALTY, DRAW_PERIOD, SCREEN_HEIGHT, SCREEN_WIDTH
 from game_objects.background import draw_background
 from game_objects.attackers.bug import  update_bugs
 from game_objects.drone.drone import create_drone, update_drone
 
 pygame.init()
-
 
 class Game:
     def __init__(self):
@@ -61,7 +61,6 @@ class Game:
                 self.run = False
 
 
-        self.scroll = draw_background(self.screen, self.scroll)
 
         drone_reward += update_drone(self.ship, self.screen, drone_reward, action, *self.options)
   
@@ -79,10 +78,28 @@ class Game:
             reward += int(drone_reward + bug_reward)
         
         self.score = score
+        
+        return reward, self.lost, self.score
+
+
+    def render(self):
+        self.scroll = draw_background(self.screen, self.scroll)
+
+        now = datetime.datetime.now()
+        next_draw_val = self.ship.next_draw
+        if now >= next_draw_val:
+                next_draw_val += DRAW_PERIOD
+
+                self.ship.draw(self.screen)
+        
+
+        for bug in self.bugs:
+            bug.draw(self.screen)
+
 
         lives_label = self.main_font.render(f"Lives: {self.ship.health}", 1, (0,0,0))
         level_label = self.main_font.render(f"Level: {self.level}", 1, (0,0,0))
-        reward_label = self.main_font.render(f"Reward: {reward}", 1, (0,0,0))
+        reward_label = self.main_font.render(f"Reward: {self.reward}", 1, (0,0,0))
         score_label = self.main_font.render(f"Score: {int(self.score)}", 1, (0,0,0))
 
         self.screen.blit(lives_label, (10, 35))
@@ -90,10 +107,11 @@ class Game:
         self.screen.blit(level_label, (SCREEN_WIDTH - level_label.get_width() - 10, 10))
         self.screen.blit(reward_label, (SCREEN_WIDTH - reward_label.get_width() - 10, 35))
 
+        
 
         pygame.display.update()
 
-        return reward, self.lost, self.score
+
 
     def update_closest_bug_data(self, bugs, ship):
         if not bugs:

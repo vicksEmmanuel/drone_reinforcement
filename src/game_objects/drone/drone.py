@@ -6,7 +6,7 @@ import pygame
 import random
 import math
 
-from game_objects.constant import EDGE_PROXIMITY_PENALTY, FILE_PATH, SAFE_ALTITUDE_REWARD, SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH, Direction
+from game_objects.constant import DESIRED_LPS, DRAW_PERIOD, EDGE_PROXIMITY_PENALTY, FILE_PATH, NEXT_DRAW, NEXT_THINK, SAFE_ALTITUDE_REWARD, SCREEN_HEIGHT, SCREEN_WIDTH, DRONE_HEALTH, THINK_PERIOD, Direction
 from game_objects.drone.drone_controller import AutoController, ManualController
 from game_objects.drone.drone_sensors import Sensors
 
@@ -20,10 +20,10 @@ DRONE = pygame.transform.scale(DRONE, (40, 40))
 desired_lps = 100.0
 desired_fps = 60.0
 
-think_period = datetime.timedelta(seconds=1.0 / desired_lps)
-next_think = datetime.datetime.now()
-draw_period = datetime.timedelta(seconds=1.0 / desired_fps)
-next_draw = datetime.datetime.now()
+think_period = THINK_PERIOD
+next_think = NEXT_THINK
+draw_period = DRAW_PERIOD
+next_draw = NEXT_DRAW
 
 gravity = 9.91
 
@@ -31,6 +31,7 @@ class Ship(object):
 
     def __init__(self, pos, world, controller, sensor_interface=Sensors, base_error=0, health = DRONE_HEALTH):
         self.controller = controller
+        self.next_draw  = next_draw
         self.world = world
         self.pos = pos
         self.rot = -math.pi / 2
@@ -243,10 +244,10 @@ def update_drone(ship, screen, reward, action, next_draw_val, next_think_val, th
         ship.vel[1] += gravity / desired_lps_val
         new_reward += ship.update(new_reward,action)
 
-    if now >= next_draw_val:
-        next_draw_val += draw_period_val
+    # if now >= next_draw_val:
+    #     next_draw_val += draw_period_val
 
-        ship.draw(screen)
+    #     ship.draw(screen)
         # pygame.display.flip()
 
     return new_reward

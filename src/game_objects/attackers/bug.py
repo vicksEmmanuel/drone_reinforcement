@@ -128,7 +128,7 @@ def update_bugs(
         
         # Update the bug's position and draw it
         bug.move()
-        bug.draw(screen)
+        # bug.draw(screen)
     
     return  new_reward + reward, score
 
@@ -136,4 +136,10 @@ def update_bugs(
 def collide(obj1, obj2):
     offset_x = obj2.pos[0] - obj1.pos[0]
     offset_y = obj2.pos[1] - obj1.pos[1]
-    return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) != None
+
+    try:
+        return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) != None
+    except:
+        return False
+
+    

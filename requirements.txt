@@ -5,3 +5,5 @@ torchvision
 opencv-python
 ipython
 matplotlib
+tensorboard
+algos-py

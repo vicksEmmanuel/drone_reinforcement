@@ -46,7 +46,7 @@ class Agent:
         self.current_sequence = random.choice(self.direction_sequences)
         self.current_direction_index = 0
         self.steps_in_current_direction = 0
-        self.max_steps_in_current_direction = random.randint(1, 100)
+        self.max_steps_in_current_direction = random.randint(1, 200)
 
 
     def stack_frames(self, new_frame, is_new_episode):
@@ -116,10 +116,12 @@ class Agent:
         self.trainer.train_step(state_tensor, action_tensor, reward_tensor, next_state_tensor, done_tensor)
 
     def get_action(self, state):
-        self.epsilon = 1000 - self.n_games
+        self.epsilon = 50000 - self.n_games
         final_move = [0] * OUTPUT_NUMBER
 
-        if random.randint(0, 800) < self.epsilon:
+        use_random = random.randint(0, 50000) < self.epsilon
+
+        if use_random:
             self.update_movement_sequence()
             current_direction = self.current_sequence[self.current_direction_index]
             print("Action: Random")
@@ -156,7 +158,7 @@ class Agent:
         self.steps_in_current_direction += 1
         if self.steps_in_current_direction >= self.max_steps_in_current_direction:
             self.steps_in_current_direction = 0
-            self.max_steps_in_current_direction = random.randint(1, 50)
+            self.max_steps_in_current_direction = random.randint(1, 100)
             self.current_direction_index = (self.current_direction_index + 1) % len(self.current_sequence)
 
             # If the sequence is complete, pick a new sequence
@@ -165,7 +167,7 @@ class Agent:
 
 
 def agent_train():
-    plot_scores, plot_mean_scores, plot_reward, plot_mean_reward, n_games, record = load_values()
+    plot_scores, plot_mean_scores, plot_reward, plot_mean_reward, n_games, record, record_reward = load_values()
 
     total_score = sum(plot_scores)
     total_reward = sum(plot_reward)
@@ -178,6 +180,7 @@ def agent_train():
 
     while True:
 
+        game.render()
         screen_data = agent.capture_screen(game.screen)
         processed_frame = agent.preprocess_frame(screen_data)
         stacked_frames = agent.stack_frames(processed_frame, is_new_episode)
@@ -224,11 +227,14 @@ def agent_train():
             agent.n_games += 1
             game.reset()
 
-            if score > record:
-                record = score
-                agent.model.save()
-            else:
-                agent.model.save()
+            all_reward = sum(reward_per_episode)
+            cummulative_reward_average = sum(plot_reward)/agent.n_games
+
+            try:
+                if score > record:
+                    agent.model.save()
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
 
 
             plot_scores.append(score)
@@ -239,6 +245,8 @@ def agent_train():
 
             plot_reward.append(sum(reward_per_episode))
             total_reward += sum(reward_per_episode)
+            
+
             mean_reward = total_reward / agent.n_games
             plot_mean_reward.append(mean_reward)
 
@@ -250,7 +258,8 @@ def agent_train():
                 plot_reward, 
                 plot_mean_reward, 
                 agent.n_games, 
-                record
+                record,
+                record_reward
             )
 
             reward_per_episode = []

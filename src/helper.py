@@ -29,6 +29,7 @@ def save_values(
         plot_mean_reward, 
         n_games, 
         record, 
+        record_reward,
         filename='training_data.json'
 ):
     data = {
@@ -37,10 +38,13 @@ def save_values(
         'plot_reward': plot_reward,
         'plot_mean_reward': plot_mean_reward,
         'n_games': n_games,
-        'record': record
+        'record': record,
+        "record_reward": record_reward,
     }
     with open(filename, 'w') as f:
         json.dump(data, f)
+    
+    plot(plot_scores, plot_mean_scores, y_label="Score", x_label = "Number of Games", title="Score over games")
 
 
 def load_values(filename='training_data.json'):
@@ -48,7 +52,7 @@ def load_values(filename='training_data.json'):
         with open(filename, 'r') as f:
             data = json.load(f)
         return (data['plot_scores'], data['plot_mean_scores'], data['plot_reward'], 
-                data['plot_mean_reward'], data['n_games'], data['record'])
+                data['plot_mean_reward'], data['n_games'], data['record'], data['record_reward'])
     except FileNotFoundError:
         # Return default values if file not found
-        return ([], [], [], [], 0, 0)
+        return ([], [], [], [], 0, 0, 0)

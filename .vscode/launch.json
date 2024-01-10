@@ -5,10 +5,10 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Python: Current File",
+			"name": "Python: Train Drone Shooter",
 			"type": "python",
 			"request": "launch",
-			"program": "${file}",
+			"program": "src/start.py",
 			"console": "integratedTerminal",
 			"justMyCode": true
 		}
