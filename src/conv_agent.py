@@ -173,6 +173,9 @@ def agent_train():
     game = Game()
     agent.n_games = n_games
     is_new_episode = True
+    improvement_threshold=0.1
+
+    best_average = -float('inf')
 
     reward_per_episode = []
 
@@ -227,6 +230,12 @@ def agent_train():
 
             all_reward = sum(reward_per_episode)
             cummulative_reward_average = sum(plot_reward)/agent.n_games
+
+
+            average_score = np.mean(reward_per_episode[-100:])
+            if average_score > best_average + improvement_threshold:
+                best_average = average_score
+                agent.model.save()
 
             try:
                 if score > record:

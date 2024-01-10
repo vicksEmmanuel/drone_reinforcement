@@ -36,16 +36,19 @@ class Conv_QNet(nn.Module):
         x = F.relu(self.fc(x))
         return self.out(x)
     
-    def download_model_from_github(url, local_dir='./model', file_name='model.pth'):
+    def download_model_from_github(self, url, local_dir='./model', file_name='model.pth'):
+        # Ensure the local directory exists
         if not os.path.exists(local_dir):
             os.makedirs(local_dir)
 
+        # The full path for the local file
         local_file_path = os.path.join(local_dir, file_name)
-        response = requests.get(url)
 
+        # Download the file from `url` and save it locally under `file_name`
+        response = requests.get(url)
+        response.url
         with open(local_file_path, 'wb') as file:
             file.write(response.content)
-            
         print(f"Model downloaded and saved to {local_file_path}")
 
 

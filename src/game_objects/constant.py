@@ -7,7 +7,7 @@ SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 750
 BACKGROUND_SCROLL_SPEED = 0.6
 
-MODEL_URL = 'https://github.com/vicksEmmanuel/drone_reinforcement/blob/main/model/model.pth'
+MODEL_URL = 'https://github.com/vicksEmmanuel/drone_reinforcement/raw/main/model/model.pth'
 
 class Direction(Enum):
     None_ = 0
